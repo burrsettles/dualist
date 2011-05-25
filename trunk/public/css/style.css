@@ -1,0 +1,31 @@
+body { font: 14px arial, hetlvetica, sans-serif; }
+
+.topPane { overflow: hidden !important; padding:8px !important; text-align:center !important;}
+.featurePane { padding:0 !important; overflow: hidden !important; }
+
+.featureQuery { float:left; display:inline; border-right: 1px solid #fff; padding: 0; margin:0;}
+.featureQuery strong { color:#fff; display:block; font-size: 15px; padding: 4px 0 0 2px; height:20px; margin:0; }
+.featureQuery input { height:18px; display:block; font-size: 11px; margin: 4px 2px; }
+
+.queryList { border-top:1px #000 solid; overflow-y:scroll; overflow-x: hidden; padding:0; margin: 0; background-color:#fff; }
+.queryList .feature { font-size:13px; padding:1px 3px; margin:0; }
+.queryList div.feature:hover { cursor:pointer; cursor:hand; }
+
+.serialQueryList { overflow-y:scroll; overflow-x: hidden; padding:0; margin: 0; background-color:#fff; }
+.serialQueryList .serialFeature { padding: 3px; }
+.serialQueryList div.serialFeature:hover { background-color:#eee; }
+.serialFeatureLabels { float:right;}
+.serialFeatureLabels .label { padding: 0px 2px; margin:0; font-size:12px; }
+
+.instQuery { margin-bottom:15px; padding: 8px; text-align:justify; border:3px solid transparent; background-color:#eee; }
+.instLabels { text-align:right; margin-top: 10px; }
+.label { padding: 1px 3px; border:1px solid transparent; }
+.delete { color:#fff; }
+span.label:hover { cursor:pointer; cursor:hand; }
+div.instQuery:hover { border:3px solid #999; }
+
+.labeled { font-weight:bold; color:#fff; }
+
+#expMessage { margin:10px; font-size:20px; font-weight:bold; color:#333; }
+#learn { font-size:20px; width:98%; height:40px; font-weight:bold; background-color:#666; color:#fff; border:2px solid #333;}
+#learn:hover { background-color:#688; color:#ff8; border:2px solid #000; cursor:pointer; cursor:hand; }

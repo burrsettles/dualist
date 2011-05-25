@@ -1,0 +1,13 @@
+DUALIST: Utility for Active Learning with Instances and Semantic Terms
+======================================================================
+
+This software is released under the Apache License v2.0:
+http://www.apache.org/licenses/LICENSE-2.0
+
+See README.txt for other release information.
+
+DUALIST also depends on several other open-source projects:
+ - Guava (http://code.google.com/p/guava-libraries) -- Apache License 2.0
+ - jQuery (http://jquery.com/) -- MIT License
+ - MALLET (http://mallet.cs.umass.edu/) -- Common Public License 1.0
+ - Play! Framework (http://www.playframework.org/) -- Apache License 2.0

@@ -1,0 +1,13 @@
+body { font: 14px arial, hetlvetica, sans-serif; }
+
+a { color: #900; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+#home { width: 500px; margin:2em auto; text-align: center;}
+#home a { background: #900; border: 1px solid black; color: #fff; display: block; text-align:center; font-size: 1.5em; margin: 1em; padding: 0.5em; }
+#home a:hover { background: #c00; text-decoration: none; }
+.subtext { font-size:0.7em; color:#fcc;}
+
+#setup { width: 700px; margin: 2em auto; }
+
+#footer { width: 500px; color: #666; text-align:center; margin: 1em auto; padding: 0.5em; }
