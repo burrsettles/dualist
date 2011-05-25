@@ -1,0 +1,25 @@
+#{extends 'main.html' /}
+#{set title:'DUALIST' /}
+
+ 
+#{if flash.error}
+    <p style="color:#c00">
+        ${flash.error}
+    </p>
+#{/if}
+
+<div id="home">
+	<h1>Choose Your Scenario</h1>
+	
+	<a href="@{Application.explore()}">Explore<br/>
+		<span class="subtext">unlabeled data: create labels and start annotating</span>
+		</a>
+	<a href="@{Application.experiment()}">Experiment<br/>
+		<span class="subtext">labeled data: run a controlled, timed user study</span>
+		</a>
+</div>
+
+<div id="footer">
+	<a href="http://code.google.com/p/dualist/">DUALIST</a>: Utility for Active Learning with Instances and Semantic Terms<br/>
+	&copy; 2011 <a href="http://www.cs.cmu.edu/~bsettles/">Burr Settles</a>, Carnegie Mellon University
+</div>
