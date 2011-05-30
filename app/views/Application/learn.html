@@ -1,90 +1,89 @@
 <html>
 <head>
-	<title>DUALIST: Learning</title>
-	<!-- <link rel="stylesheet" type="text/css" href="css/layout-default.css" charset="utf-8" /> -->
-	<link rel="stylesheet" type="text/css" href="@{'/public/css/style.css'}" charset="utf-8" />
-	<script type="text/javascript" src="@{'/public/js/jquery.js'}"></script>
-	<script type="text/javascript" src="@{'/public/js/jquery.ui.js'}"></script>
-	<script type="text/javascript" src="@{'/public/js/jquery.layout.js'}"></script>
-	<script type="text/javascript" src="@{'/public/js/special.js'}"></script>
+    <title>DUALIST: Learning</title>
+    <link rel="stylesheet" type="text/css" href="@{'/public/css/style.css'}" charset="utf-8" />
+    <script type="text/javascript" src="@{'/public/js/jquery.js'}"></script>
+    <script type="text/javascript" src="@{'/public/js/jquery.ui.js'}"></script>
+    <script type="text/javascript" src="@{'/public/js/jquery.layout.js'}"></script>
+    <script type="text/javascript" src="@{'/public/js/special.js'}"></script>
 </head>
 <body>
-	
-<div class="ui-layout-north topPane">
-	<input type="button" name="learn" value="submit labels and retrain!" id="learn">
-	<form id="oracle" action="@{Application.learn()}" method="post">
-		<input type="hidden" name="mode" id="mode" value="${mode}"/>
-		<input type="hidden" name="username" id="username" value="${username}"/>
-		<input type="hidden" name="dataset" id="dataset" value="${dataset}"/>
-		<input type="hidden" name="timeSoFar" id="timeSoFar" value="${timeSoFar}"/>
-		<input type="hidden" name="features" id="oracleFeatures" value=""/>
-		<input type="hidden" name="instances" id="oracleInstances" value=""/>
-		<input type="hidden" name="log" id="oracleLog" value=""/>
-	</form>
-</div>
+
+    <div class="ui-layout-north topPane">
+        <input type="button" name="learn" value="submit labels and retrain!" id="learn">
+        <form id="oracle" action="@{Application.learn()}" method="post">
+            <input type="hidden" name="mode" id="mode" value="${mode}"/>
+            <input type="hidden" name="username" id="username" value="${username}"/>
+            <input type="hidden" name="dataset" id="dataset" value="${dataset}"/>
+            <input type="hidden" name="timeSoFar" id="timeSoFar" value="${timeSoFar}"/>
+            <input type="hidden" name="features" id="oracleFeatures" value=""/>
+            <input type="hidden" name="instances" id="oracleInstances" value=""/>
+            <input type="hidden" name="log" id="oracleLog" value=""/>
+        </form>
+    </div>
 
 <!-- feature queries -->
 <div class="ui-layout-east featurePane">
-*{ for instance-only interfaces }*
-#{if mode == 'inst' || mode == 'passive'}
-	<p id="expMessage">&lArr; You only label instances (left) in this experiment.</p>
-#{/if}
-*{ for the "grid" per-label dual interface }*
-#{elseif mode == 'dual'}
-	#{list items:0..labelAlphabet.size()-1, as:'li'}
-	<div class="featureQuery" labelIndex="${li}" id="fq${li}">
-		<strong>${labelAlphabet.lookupObject(li).toString()}</strong>
-		<input class="addFeature" labelIndex="${li}" type="text" value=""/>
-		<div class="queryList">
-			#{list items:queryFeatures.get(li), as:'feature'}
-			<div class="feature" labelIndex="${li}" id="${li}||${feature}">${feature}</div>
-			#{/list}
-			#{list items:labeledFeatures.get(li), as:'feature'}
-			<div class="feature labeled" labelIndex="${li}" id="${li}||${feature}">${feature}</div>
-			#{/list}
-		</div>
-	</div>
-	#{/list}
-#{/elseif}
-*{ for the "serial" dual interface }*
-#{else}
-	<div class="serialQueryList">
-	#{list items:queryFeatures.values(), as:'feature'}
-		<div class="serialFeature">${feature}
-			<div class="serialFeatureLabels">
-				#{list items:0..labelAlphabet.size()-1, as:'li'}
-				<span labelIndex="${li}" id="${li}||${feature}" class="label">${labelAlphabet.lookupObject(li).toString()}</span>
-				#{/list}
-				<span labelIndex="-1" id="-1||${feature}" class="label delete">X</span>
-			</div>
-		</div>
-	#{/list}
-	</div>
-#{/else}
+    *{ for instance-only interfaces }*
+    #{if mode == 'inst' || mode == 'passive'}
+    <p id="expMessage">&lArr; You only label instances (left) in this experiment.</p>
+    #{/if}
+    *{ for the "grid" per-label dual interface }*
+    #{elseif mode == 'dual'}
+    #{list items:0..labelAlphabet.size()-1, as:'li'}
+    <div class="featureQuery" labelIndex="${li}" id="fq${li}">
+        <strong>${labelAlphabet.lookupObject(li).toString()}</strong>
+        <input class="addFeature" labelIndex="${li}" type="text" value=""/>
+        <div class="queryList">
+            #{list items:queryFeatures.get(li), as:'feature'}
+            <div class="feature" labelIndex="${li}" id="${li}||${feature}">${feature}</div>
+            #{/list}
+            #{list items:labeledFeatures.get(li), as:'feature'}
+            <div class="feature labeled" labelIndex="${li}" id="${li}||${feature}">${feature}</div>
+            #{/list}
+        </div>
+    </div>
+    #{/list}
+    #{/elseif}
+    *{ for the "serial" dual interface }*
+    #{else}
+    <div class="serialQueryList">
+        #{list items:queryFeatures.values(), as:'feature'}
+        <div class="serialFeature">${feature}
+            <div class="serialFeatureLabels">
+                #{list items:0..labelAlphabet.size()-1, as:'li'}
+                <span labelIndex="${li}" id="${li}||${feature}" class="label">${labelAlphabet.lookupObject(li).toString()}</span>
+                #{/list}
+                <span labelIndex="-1" id="-1||${feature}" class="label delete">X</span>
+            </div>
+        </div>
+        #{/list}
+    </div>
+    #{/else}
 </div>
 
 <!-- instance queries -->
 <div class="ui-layout-center instancePane">
-	#{list items:queryInstances, as:'inst'}
-	<div class="instQuery" title="">
-		${inst.getSource().nl2br()}
-		<div class="instLabels">
-			#{list items:0..labelAlphabet.size()-1, as:'li'}
-			<span labelIndex="${li}" id="${li}||${inst.getName()}" class="label">${labelAlphabet.lookupObject(li).toString()}</span>
-			#{/list}
-			<span labelIndex="-1" id="-1||${inst.getName()}" class="label delete">X</span>
-		</div>
-	</div>
-	#{/list}
+    #{list items:queryInstances, as:'inst'}
+    <div class="instQuery" title="">
+        ${inst.getSource().nl2br()}
+        <div class="instLabels">
+            #{list items:0..labelAlphabet.size()-1, as:'li'}
+            <span labelIndex="${li}" id="${li}||${inst.getName()}" class="label">${labelAlphabet.lookupObject(li).toString()}</span>
+            #{/list}
+            <span labelIndex="-1" id="-1||${inst.getName()}" class="label delete">X</span>
+        </div>
+    </div>
+    #{/list}
 </div>
 
 <!-- footer business -->
 <div class="ui-layout-south bottomPane">
-	<input type="button" name="predict" value="make predictions!" id="predict">
-	<form target="_preds" id="makePredictions" action="@{Application.predict()}" method="post">
-		<input type="hidden" name="features" id="trainingFeatures" value=""/>
-		<input type="hidden" name="instances" id="trainingInstances" value=""/>
-	</form>
+    <input type="button" name="predict" value="make predictions!" id="predict">
+    <form target="_preds" id="makePredictions" action="@{Application.predict()}" method="post">
+        <input type="hidden" name="features" id="trainingFeatures" value=""/>
+        <input type="hidden" name="instances" id="trainingInstances" value=""/>
+    </form>
 </div>
 
 </body>

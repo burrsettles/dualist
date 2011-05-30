@@ -16,35 +16,35 @@
 <form action="@{Application.setupExplore()}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
 
 <table>
-	<tr>
-		<td><strong>Your Name:</strong></td>
-		<td><input type="text" name="username" value="demo" id="username"/></td>
-	</tr>
-	<tr>
-		<td><strong>Data Set:</strong></td>
-		<td><input type="file" id="dataset" name="dataset" /></td>
-	</tr>
-	<tr>
-		<td><strong>Class Labels (Comma-Separated):</strong></td>
-		<td><input type="text" id="labels" name="labels" /></td>
-	</tr>
-	<tr>
-		<td><strong>Data Type:</strong></td>
-		<td>
-			<input checked="checked" type="radio" name="type" value="document" id="type_text"><label for="type_text">Documents</label>
-			<input type="radio" name="type" value="simple" id="type_simple"><label for="type_simple">Simple Lines</label>
-			<input type="radio" name="type" value="twitter" id="type_twitter"><label for="type_twitter">Tweets</label>
-			<input type="radio" name="type" value="entity" id="type_entity"><label for="type_entity">Entities</label>
-		</td>
-	</tr>
-	<tr>
-		<td><strong># Instances Queries:</strong></td>
-		<td><input size="2" type="text" name="numInstances" value="2" id="numInstances"/></td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td><input type="submit" value="Start Exploring!"/></td>
-	</tr>
+    <tr>
+        <td><strong>Your Name:</strong></td>
+        <td><input type="text" name="username" value="demo" id="username"/></td>
+    </tr>
+    <tr>
+        <td><strong>Data Set:</strong></td>
+        <td><input type="file" id="dataset" name="dataset" /></td>
+    </tr>
+    <tr>
+        <td><strong>Class Labels (Comma-Separated):</strong></td>
+        <td><input type="text" id="labels" name="labels" /></td>
+    </tr>
+    <tr>
+        <td><strong>Data Type:</strong></td>
+        <td>
+            <input checked="checked" type="radio" name="type" value="document" id="type_text"><label for="type_text">Documents</label>
+            <input type="radio" name="type" value="simple" id="type_simple"><label for="type_simple">Simple Lines</label>
+            <input type="radio" name="type" value="twitter" id="type_twitter"><label for="type_twitter">Tweets</label>
+            <input type="radio" name="type" value="entity" id="type_entity"><label for="type_entity">Entities</label>
+        </td>
+    </tr>
+    <tr>
+        <td><strong># Instances Queries:</strong></td>
+        <td><input size="2" type="text" name="numInstances" value="2" id="numInstances"/></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td><input type="submit" value="Start Exploring!"/></td>
+    </tr>
 </table>
 
 </form>

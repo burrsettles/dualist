@@ -19,46 +19,44 @@ import cc.mallet.util.CharSequenceLexer;
 
 public class TwitterPipe extends Pipe {
 
-	private boolean anonmymize = true;
-	private boolean emoticons = true;
-	
-	private Pipe myPipe = new SerialPipes(new Pipe[] {
-			new CopyData2Source(),
-			new CharSequenceLowercase(),
-			anonmymize 
-			? new CharSequenceReplace(Pattern.compile("http\\:\\/\\/.*\\b"), "HTTPLINK") 
-			: new Noop(),
-			anonmymize 
-			? new CharSequenceReplace(Pattern.compile("\\@\\w+"), "@USERLINK") 
-			: new Noop(),
-			new CharSequenceReplace(Pattern.compile("\\'"), ""),
-			new CharSequenceReplace(Pattern.compile("\\!\\!+"), "!!"),
-			new CharSequenceReplace(Pattern.compile("\\?\\?+"), "??"),
-			new CharSequenceReplace(Pattern.compile("\\bno\\s+"), "no_"),
-			new CharSequenceReplace(Pattern.compile("\\bnot\\s+"), "not_"),
-			new CharSequenceReplace(Pattern.compile("\\bdoesnt\\s+"), "doesnt_"),
-			new CharSequenceReplace(Pattern.compile("\\bdont\\s+"), "dont_"),
-			new CharSequenceReplace(Pattern.compile("\\baint\\s+"), "aint_"),
-//			new CharSequenceReplace(Pattern.compile("\\b(the|a|an)\\b"), ""),
-			emoticons
-			? new CharSequence2TokenSequence("([\\@\\#]?\\w[\\w'_]+)|([:;=x][-o^]?[)(/\\\\dp])|([/\\\\)(dp][-o^]?[:;=x])|([!?]+)")
-			: new CharSequence2TokenSequence("[\\@\\#]?\\w[\\w'_]+"),
-			new TokenSequenceBiGrammer(),
-			new TokenSequenceRemoveStopwords(),
-			new TokenSequence2FeatureSequence(),
-			new FeatureSequence2AugmentableFeatureVector(),
-			new Labelize(),
-//			new PrintInputAndTarget(),
-	});
+    private boolean anonmymize = true;
+    private boolean emoticons = true;
 
+    private Pipe myPipe = new SerialPipes(new Pipe[] {
+            new CopyData2Source(),
+            new CharSequenceLowercase(),
+            anonmymize 
+            ? new CharSequenceReplace(Pattern.compile("http\\:\\/\\/.*\\b"), "HTTPLINK") 
+            : new Noop(),
+            anonmymize 
+            ? new CharSequenceReplace(Pattern.compile("\\@\\w+"), "@USERLINK") 
+            : new Noop(),
+            new CharSequenceReplace(Pattern.compile("\\'"), ""),
+            new CharSequenceReplace(Pattern.compile("\\!\\!+"), "!!"),
+            new CharSequenceReplace(Pattern.compile("\\?\\?+"), "??"),
+            new CharSequenceReplace(Pattern.compile("\\bno\\s+"), "no_"),
+            new CharSequenceReplace(Pattern.compile("\\bnot\\s+"), "not_"),
+            new CharSequenceReplace(Pattern.compile("\\bdoesnt\\s+"), "doesnt_"),
+            new CharSequenceReplace(Pattern.compile("\\bdont\\s+"), "dont_"),
+            new CharSequenceReplace(Pattern.compile("\\baint\\s+"), "aint_"),
+            emoticons
+            ? new CharSequence2TokenSequence("([\\@\\#]?\\w[\\w'_]+)|([:;=x][-o^]?[)(/\\\\dp])|([/\\\\)(dp][-o^]?[:;=x])|([!?]+)")
+            : new CharSequence2TokenSequence("[\\@\\#]?\\w[\\w'_]+"),
+            new TokenSequenceBiGrammer(),
+            new TokenSequenceRemoveStopwords(),
+            new TokenSequence2FeatureSequence(),
+            new FeatureSequence2AugmentableFeatureVector(),
+            new Labelize(),
+//            new PrintInputAndTarget(),
+    });
 
-	public Instance pipe (Instance carrier) {
-		carrier.setSource(carrier.getData());
-		return myPipe.pipe(carrier);
-	}
+    public Instance pipe (Instance carrier) {
+        carrier.setSource(carrier.getData());
+        return myPipe.pipe(carrier);
+    }
 
-	public java.util.Iterator<Instance> newIteratorFrom(java.util.Iterator<Instance> carrier) {
-		return myPipe.newIteratorFrom(carrier);
-	}
+    public java.util.Iterator<Instance> newIteratorFrom(java.util.Iterator<Instance> carrier) {
+        return myPipe.newIteratorFrom(carrier);
+    }
 
 }
