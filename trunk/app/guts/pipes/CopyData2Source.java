@@ -7,7 +7,7 @@ public class CopyData2Source extends Pipe {
     private static final long serialVersionUID = 1;
 
     public Instance pipe (Instance carrier) {
-    	carrier.setSource(carrier.getData());
+        carrier.setSource(carrier.getData());
         return carrier;
     }
 

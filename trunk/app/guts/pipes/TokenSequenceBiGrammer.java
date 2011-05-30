@@ -8,18 +8,14 @@ import cc.mallet.types.TokenSequence;
 
 public class TokenSequenceBiGrammer extends Pipe {
 
-	public Instance pipe (Instance carrier) {
-		TokenSequence ts = (TokenSequence) carrier.getData();
-		int size = ts.size();
+    public Instance pipe (Instance carrier) {
+        TokenSequence ts = (TokenSequence) carrier.getData();
+        int size = ts.size();
+        for (int i = 1; i < size; i++) {
+            ts.add (ts.get(i-1).getText() + "_" + ts.get(i).getText());
+        }
+        carrier.setData(ts);
+        return carrier;
+    }
 
-//		TokenSequence ts2 = new TokenSequence();
-		for (int i = 1; i < size; i++) {
-			ts.add (ts.get(i-1).getText() + "_" + ts.get(i).getText());
-		}
-		
-		carrier.setData(ts);
-		return carrier;
-	}
-
-	
 }
