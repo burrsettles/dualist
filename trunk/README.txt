@@ -55,9 +55,9 @@ is related: https://sites.google.com/site/comblearn/
 INTALLATION + USAGE
 -------------------
 
-DUALIST requires Java 1.6 to work properly. It ships with most of the
-libraries it needs to work, the only exception being the Play! web framework
-for Java v1.1, which can be downloaded here:
+DUALIST requires Java 1.6 and Python 2.5 to work properly. It ships with most 
+of the libraries it needs to work, the only exception being the Play! web 
+framework for Java v1.1, which can be downloaded here:
 
 	http://download.playframework.org/releases/play-1.1.zip
 
