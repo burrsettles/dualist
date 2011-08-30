@@ -1,8 +1,6 @@
 package dualist.pipes;
 
 import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.TokenSequence;
 
