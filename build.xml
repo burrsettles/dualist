@@ -14,6 +14,7 @@
 
     <!-- targets -->
     <target name="clean">
+        <delete dir="gui/tmp"/>
         <delete dir="${build.dir}"/>
         <delete file="${ant.project.name}.jar"/>
     </target>
@@ -32,6 +33,8 @@
         <copy file="${ant.project.name}.jar" todir="${lib.dir}"/>
     </target>
 
+    <target name="main" depends="jar"/>
+    
     <target name="clean-build" depends="clean,jar"/>
 
 </project>

@@ -2,11 +2,9 @@ package dualist.classify;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.Vector;
 
 import cc.mallet.classify.Classifier;
@@ -106,21 +104,6 @@ public class Queries {
             if (counts[c][idx] > best_value)
                 best_value = counts[c][idx]; 
         return counts[li][idx] > best_value * 0.75;
-    }
-
-
-    private static Set<String> pullClasses(double[][] counts, Alphabet targetAlphabet, int idx) {
-        Set<String> ret = new HashSet<String>();
-        double best_value = 0;		
-        for (int c = 0; c < counts.length; c++) {
-            if (counts[c][idx] > best_value) {
-                best_value = counts[c][idx]; 
-            }
-        }
-        for (int c = 0; c < counts.length; c++)
-            if (counts[c][idx] > best_value * 0.75)
-                ret.add( (String)targetAlphabet.lookupObject(c) );
-        return ret;
     }
 
     public static InstanceList randomInstances(InstanceList poolData, int num) {
