@@ -1,0 +1,37 @@
+<project name="dualist-core" basedir="." default="main">
+
+    <!-- properties -->
+    <property name="src.dir"     value="core/src"/>
+    <property name="build.dir"   value="core/build"/>
+    <property name="lib.dir"     value="gui/lib"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="main-class"  value="dualist.TUI"/>
+
+    <!-- classpath -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <!-- targets -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete file="${ant.project.name}.jar"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
+        <copy file="${ant.project.name}.jar" todir="${lib.dir}"/>
+    </target>
+
+    <target name="clean-build" depends="clean,jar"/>
+
+</project>
