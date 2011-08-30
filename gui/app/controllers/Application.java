@@ -5,10 +5,11 @@ import play.cache.Cache;
 import play.data.validation.Required;
 import play.mvc.*;
 
-import guts.NaiveBayesWithPriorsTrainer;
-import guts.Queries;
-import guts.Util;
-import guts.pipes.CopyData2Source;
+import util.Util;
+
+import dualist.classify.NaiveBayesWithPriorsTrainer;
+import dualist.classify.Queries;
+import dualist.pipes.CopyData2Source;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
-
 
 import cc.mallet.classify.Classification;
 import cc.mallet.classify.Classifier;

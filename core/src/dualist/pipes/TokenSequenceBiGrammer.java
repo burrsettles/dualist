@@ -1,4 +1,4 @@
-package guts.pipes;
+package dualist.pipes;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;

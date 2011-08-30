@@ -1,10 +1,6 @@
-package guts;
+package util;
 
-import guts.pipes.CopyData2Source;
-import guts.pipes.DocumentPipe;
-import guts.pipes.EntityPipe;
-import guts.pipes.SimpleLinesPipe;
-import guts.pipes.TwitterPipe;
+import dualist.pipes.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -110,15 +106,6 @@ public class Util {
         return ret;
     }
 
-    public static double entropy(double[] probs) {
-        double ret = 0;
-        for (int i=0; i<probs.length; i++)
-            ret -= (probs[i] > 1e-7)
-            ? probs[i] * Math.log(probs[i]) 
-                    : 0;
-            return ret;
-    }
-
     public static InstanceList probabilisticData(NaiveBayes nbModel,
             InstanceList labeledSet, InstanceList unlabeledSet) {
 
@@ -143,14 +130,6 @@ public class Util {
             ret.add(inst2, 0.5);
         }
         return ret;
-    }
-
-    public static double margin(LabelVector lv) {
-        return Math.abs(lv.getValueAtRank(0) - lv.getValueAtRank(1));
-    }
-
-    public static double leastConfident(LabelVector lv) {
-        return 1.0 - lv.getValueAtRank(0);
     }
 
     public static InstanceList readData(File dataset, String dataType, LabelAlphabet labelAlphabet) {

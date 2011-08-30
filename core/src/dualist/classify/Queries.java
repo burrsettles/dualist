@@ -1,4 +1,4 @@
-package guts;
+package dualist.classify;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,20 +9,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
-import guts.Util;
 import cc.mallet.classify.Classifier;
-import cc.mallet.classify.NaiveBayes;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureCounts;
 import cc.mallet.types.FeatureVector;
-import cc.mallet.types.InfoGain;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.Labeling;
-import cc.mallet.types.Multinomial;
 import cc.mallet.types.PerLabelInfoGain;
-import cc.mallet.types.RankedFeatureVector;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -147,13 +142,13 @@ public class Queries {
             LabelVector lv = c.classify(instance).getLabelVector();
             // entropy query strategy
             if (mode.equals("entropy"))
-                instanceMap.put(instance, Util.entropy(lv.getValues()));
+                instanceMap.put(instance, entropy(lv));
             // "least confident" strategy
             else if (mode.equals("lc"))
-                instanceMap.put(instance, Util.leastConfident(lv));
+                instanceMap.put(instance, leastConfident(lv));
             // margin strategy (default)
             else
-                instanceMap.put(instance, Util.margin(lv));
+                instanceMap.put(instance, margin(lv));
         }
         InstanceList ret = poolData.cloneEmpty();
         int numQueries = 0;
@@ -179,5 +174,27 @@ public class Queries {
         });
         return ret;
     }
+
+    public static double entropy(double[] probs) {
+        double ret = 0;
+        for (int i=0; i<probs.length; i++)
+            ret -= (probs[i] > 1e-7)
+            ? probs[i] * Math.log(probs[i]) 
+                    : 0;
+            return ret;
+    }
+
+    public static double entropy(LabelVector lv) {
+        return entropy(lv.getValues());
+    }
+    
+    public static double margin(LabelVector lv) {
+        return Math.abs(lv.getValueAtRank(0) - lv.getValueAtRank(1));
+    }
+
+    public static double leastConfident(LabelVector lv) {
+        return 1.0 - lv.getValueAtRank(0);
+    }
+
 
 }

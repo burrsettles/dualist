@@ -1,11 +1,9 @@
-package guts;
+package dualist.classify;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

@@ -1,4 +1,4 @@
-package guts.pipes;
+package dualist.pipes;
 
 
 import java.util.regex.Pattern;
