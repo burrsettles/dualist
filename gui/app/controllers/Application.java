@@ -56,9 +56,15 @@ import models.*;
 
 public class Application extends Controller {
 
-    private static DecimalFormat df = new DecimalFormat("0.0000");
+    private static DecimalFormat df = new DecimalFormat("0.00000");
+    private static String RESULTS_DIR = "../results/";
+    private static String MODELS_DIR = "../models/";
 
     public static void index() {
+        if ((new File(RESULTS_DIR)).mkdirs())
+            Logger.info("Results output directory '%s' created", RESULTS_DIR);
+        if ((new File(MODELS_DIR)).mkdirs())
+            Logger.info("Model output directory '%s' created", MODELS_DIR);
         render();
     }
 
@@ -118,7 +124,7 @@ public class Application extends Controller {
         render(username);
     }
 
-    public static void setupExperiment(@Required String username, @Required File dataset, @Required String type, @Required String mode, @Required int numMinutes, @Required int numInstances) throws IOException {
+    public static void setupExperiment(@Required String username, @Required File trainset, File testset, @Required String type, @Required String mode, @Required int numMinutes, @Required int numInstances) throws IOException {
 
         if(validation.hasErrors()) {
             flash.error(validation.errors().toString());
@@ -126,20 +132,41 @@ public class Application extends Controller {
             experiment(username);
         }
 
-        // process the data set...
-        Logger.info("Loading '%s' data set...", dataset);
-        InstanceList ilist = Util.readData(dataset, type, null);
-        Alphabet dataAlphabet = ilist.getDataAlphabet();
-        Alphabet labelAlphabet = ilist.getTargetAlphabet();
+        InstanceList trainData;
+        InstanceList testData;
+        Alphabet dataAlphabet;
+        LabelAlphabet labelAlphabet;
+
+        // if a test set is supplied, use its annotations 
+        // and allow the training corpus to be unlabeled
+        if (testset != null) {
+            Logger.info("Loading '%s' test set...", testset);
+            testData = Util.readData(testset, type, null);
+            dataAlphabet = testData.getDataAlphabet();
+            labelAlphabet = (LabelAlphabet) testData.getTargetAlphabet();
+            Logger.info("Loading '%s' training set...", trainset);
+            trainData = Util.readData(trainset, type, labelAlphabet);
+        }
+        // otherwise, assume all training data is labeled, 
+        // sample 10% as a held-out test set
+        else {
+            Logger.info("Loading '%s' data set...", trainset);
+            InstanceList ilist = Util.readData(trainset, type, null);
+            dataAlphabet = ilist.getDataAlphabet();
+            labelAlphabet = (LabelAlphabet) ilist.getTargetAlphabet();
+            Logger.info("Splitting train/set set automatically...");
+            InstanceList[] split = ilist.split(new Random(27), new double[]{0.9,0.1});
+            trainData = split[0];
+            testData = split[1];
+        }
 
         // set up train/test splits and store them in the cache
-        InstanceList[] split = ilist.split(new Random(27), new double[]{0.9,0.1});
-        Cache.set(session.getId()+"-testSet", split[1], "90mn");
-        Cache.set(session.getId()+"-unlabeledSet", split[0], "90mn");
-        Cache.set(session.getId()+"-labeledSet", split[0].cloneEmpty(), "90mn");
+        Cache.set(session.getId()+"-testSet", testData, "90mn");
+        Cache.set(session.getId()+"-unlabeledSet", trainData, "90mn");
+        Cache.set(session.getId()+"-labeledSet", trainData.cloneEmpty(), "90mn");
 
         Cache.set(session.getId()+"-username", username, "90mn");
-        Cache.set(session.getId()+"-dataset", dataset.getName(), "90mn");
+        Cache.set(session.getId()+"-dataset", trainset.getName(), "90mn");
         Cache.set(session.getId()+"-type", type, "90mn");
         Cache.set(session.getId()+"-mode", mode, "90mn");
         Cache.set(session.getId()+"-numMinutes", numMinutes, "90mn");
@@ -150,12 +177,18 @@ public class Application extends Controller {
 
         Logger.info("|featureSet|=%s", dataAlphabet.size());
         Logger.info("|labelSet|=%s", labelAlphabet.size());
-        Logger.info("|dataSet|=%s", ilist.size());
+        Logger.info("|trainSet|=%s", trainData.size());
+        Logger.info("|testSet|=%s", testData.size());
         Logger.info("User: %s", username);
 
         clearResult();
+        if (testset != null)
+            logResult("%% separate train/test sets were supplied");
+        else
+            logResult("%% data set automatically split into train (90%) / test (10%)");
         logResult("%% |featureSet|=" + dataAlphabet.size());
-        logResult("%% |dataSet|=" + ilist.size());
+        logResult("%% |trainSet|=" + trainData.size());
+        logResult("%% |testSet|=" + testData.size());
         for (int li=0; li < labelAlphabet.size(); li++)
             logResult("%% " + li + "=" + labelAlphabet.lookupObject(li));
 
@@ -302,37 +335,40 @@ public class Application extends Controller {
         Cache.set(session.getId()+"-labeledSet", labeledSet, "30mn");
 
         // save the learned classifier
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("output.model"));
+        ObjectOutputStream oos = 
+            new ObjectOutputStream(
+                    new FileOutputStream(MODELS_DIR + getTrialID() + ".model"));
         oos.writeObject(nbModel);
         oos.close();
-        
+
         // done! render!
         render(mode, username, dataset, timeSoFar, labelAlphabet, queryInstances, queryFeatures, labeledFeatures);
     }
 
     private static void clearResult() {
-        String mode = (String) Cache.get(session.getId()+"-mode");
-        String dataset = (String) Cache.get(session.getId()+"-dataset");
-        String username = (String) Cache.get(session.getId()+"-username");
-        File f = new File("public/results/"+username+"_"+dataset+"_"+mode+".txt");
+        File f = new File(RESULTS_DIR + getTrialID() + ".txt");
         f.delete();
     }
 
     private static void logResult(String string) {
-        String mode = (String) Cache.get(session.getId()+"-mode");
-        String dataset = (String) Cache.get(session.getId()+"-dataset");
-        String username = (String) Cache.get(session.getId()+"-username");
-        boolean explore = (Boolean) Cache.get(session.getId()+"-explore");
         try {
-            String filename = "public/results/"+username+"_"+dataset+"_"+mode;
-            if (explore)
-                filename = filename + "_explore";
-            Files.append(string.trim() + "\n",
-                    new File(filename+".txt"), 
+            Files.append(string.trim() + "\n", 
+                    new File(RESULTS_DIR + getTrialID() + ".txt"), 
                     Charsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }		
+    }
+
+    private static String getTrialID() {
+        String mode = (String) Cache.get(session.getId()+"-mode");
+        String dataset = (String) Cache.get(session.getId()+"-dataset");
+        String username = (String) Cache.get(session.getId()+"-username");
+        boolean explore = (Boolean) Cache.get(session.getId()+"-explore");
+        String trialID = username+"_"+dataset+"_"+mode;
+        if (explore)
+            trialID = trialID + "_explore";
+        return trialID;
     }
 
     public static void predict(String features, String instances) {
