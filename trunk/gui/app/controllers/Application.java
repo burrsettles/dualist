@@ -57,8 +57,8 @@ import models.*;
 public class Application extends Controller {
 
     private static DecimalFormat df = new DecimalFormat("0.00000");
-    private static String RESULTS_DIR = "../results/";
-    private static String MODELS_DIR = "../models/";
+    private static String RESULTS_DIR = "results/";
+    private static String MODELS_DIR = "models/";
 
     public static void index() {
         if ((new File(RESULTS_DIR)).mkdirs())
