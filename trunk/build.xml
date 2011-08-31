@@ -3,20 +3,22 @@
     <!-- properties -->
     <property name="src.dir"     value="core/src"/>
     <property name="build.dir"   value="core/build"/>
-    <property name="lib.dir"     value="gui/lib"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
+    <!-- <property name="jar.dir" value="${build.dir}/jar"/> -->
+    <property name="core.lib.dir"     value="core/lib"/>
+    <property name="gui.lib.dir"     value="gui/lib"/>
     <property name="main-class"  value="dualist.TUI"/>
 
     <!-- classpath -->
     <path id="classpath">
-        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+        <fileset dir="${core.lib.dir}" includes="**/*.jar"/>
     </path>
 
     <!-- targets -->
     <target name="clean">
         <delete dir="gui/tmp"/>
         <delete dir="${build.dir}"/>
-        <delete file="${ant.project.name}.jar"/>
+        <delete file="${core.lib.dir}/${ant.project.name}.jar"/>
     </target>
 
     <target name="compile">
@@ -25,12 +27,14 @@
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}">
+        <jar destfile="${core.lib.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
         </jar>
-        <copy file="${ant.project.name}.jar" todir="${lib.dir}"/>
+        <copy todir="${gui.lib.dir}">
+          <fileset dir="${core.lib.dir}" excludes="**/*.java"/>
+        </copy>
     </target>
 
     <target name="main" depends="jar"/>

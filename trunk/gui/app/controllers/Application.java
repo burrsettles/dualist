@@ -12,7 +12,9 @@ import dualist.classify.Queries;
 import dualist.pipes.CopyData2Source;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -299,6 +301,11 @@ public class Application extends Controller {
         Cache.set(session.getId()+"-unlabeledSet", unlabeledSet, "30mn");
         Cache.set(session.getId()+"-labeledSet", labeledSet, "30mn");
 
+        // save the learned classifier
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("output.model"));
+        oos.writeObject(nbModel);
+        oos.close();
+        
         // done! render!
         render(mode, username, dataset, timeSoFar, labelAlphabet, queryInstances, queryFeatures, labeledFeatures);
     }
