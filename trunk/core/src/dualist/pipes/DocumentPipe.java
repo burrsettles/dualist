@@ -25,7 +25,7 @@ public class DocumentPipe extends Pipe {
             new CharSequenceReplace(Pattern.compile("[0-9]+"), "00"),
             new CharSequenceLowercase(),
 //            new CharSequence2TokenSequence(CharSequenceLexer.LEX_WORD_CLASSES),
-            new CharSequence2TokenSequence("[\\p{Ll}\\p{Mn}]+"),
+            new CharSequence2TokenSequence("[\\p{L}\\p{Mn}]+"),
             new TokenSequenceRemoveStopwords(),
             new TokenSequence2FeatureSequence(),
             new FeatureSequence2AugmentableFeatureVector(),

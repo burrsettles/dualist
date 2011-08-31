@@ -5,7 +5,7 @@
 
 <h1>Experiment Mode</h1>
 
-<p>Load a labeled data set (see README.txt for data formatting details) and experiment with various labeling interfaces for training a model against a benchmark corpus.</p>
+<p>Load a labeled data set (see README.txt for data formatting details) and experiment with various labeling interfaces for training a model against a benchmark corpus. If a test set is supplied, it must be labeled, and the training set may be unlabeled. If only a training set is supplied, it must be labeled and a train (90%) / test (10%) split will be created automatically.</p>
  
 #{if flash.error}
     <p style="color:#c00">
@@ -21,8 +21,12 @@
         <td><input type="text" name="username" value="${username}" id="username"/></td>
     </tr>
     <tr>
-        <td><strong>Data Set:</strong></td>
-        <td><input type="file" id="dataset" name="dataset" /></td>
+        <td><strong>Training Set:</strong></td>
+        <td><input type="file" id="trainset" name="trainset" /> (may be unlabeled if test set supplied)</td>
+    </tr>
+    <tr>
+        <td><strong>Test Set:</strong></td>
+        <td><input type="file" id="testset" name="testset" /> (optional, must be labeled)</td>
     </tr>
     <tr>
         <td><strong>Data Type:</strong></td>
@@ -37,17 +41,17 @@
         <td><strong>Annotation Mode:</strong></td>
         <td>
             <input checked="checked" type="radio" name="mode" value="dual" id="mode_dual"><label for="mode_dual">Dual Active</label>
-            <input type="radio" name="mode" value="inst" id="mode_inst"><label for="mode_inst">Active</label>
-            <input type="radio" name="mode" value="passive" id="mode_passive"><label for="mode_passive">Passive</label>
+            <input type="radio" name="mode" value="inst" id="mode_inst"><label for="mode_inst">Active (Instances)</label>
+            <input type="radio" name="mode" value="passive" id="mode_passive"><label for="mode_passive">Passive (Instances)</label>
         </td>
     </tr>
     <tr>
         <td><strong>Duration (Minutes):</strong></td>
-        <td><input size="2" type="text" name="numMinutes" value="6" id="numMinutes"/></td>
+        <td><input size="2" type="text" name="numMinutes" value="10" id="numMinutes"/></td>
     </tr>
     <tr>
         <td><strong># Instances Queries:</strong></td>
-        <td><input size="2" type="text" name="numInstances" value="2" id="numInstances"/></td>
+        <td><input size="2" type="text" name="numInstances" value="10" id="numInstances"/></td>
     </tr>
     <tr>
         <td>&nbsp;</td>

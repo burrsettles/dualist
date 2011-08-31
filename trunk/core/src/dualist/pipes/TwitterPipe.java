@@ -15,11 +15,11 @@ import cc.mallet.types.Instance;
 
 public class TwitterPipe extends Pipe {
 
-//    private static String ALPHANUM = "[A-ZçƒêîòËéíñô‚„ì†a-zˆ“˜‡’—œ–•Ÿ0-9]";
-//    private static String ALPHANUM2 = "[A-ZçƒêîòËéíñô‚„ì†a-zˆ“˜‡’—œ–•Ÿ0-9'_]";
-
     private boolean anonmymize = true;
     private boolean emoticons = true;
+    
+    private String corePattern = "([\\@\\#]?[\\p{L}\\p{Mn}][\\p{L}\\p{Mn}'_]+)|([!?]+)";
+    private String emoticonPattern = "([:;=x][-o^]?[)(/\\\\dp])|([/\\\\)(dp][-o^]?[:;=x])";
 
     private Pipe myPipe = new SerialPipes(new Pipe[] {
             new CopyData2Source(),
@@ -28,7 +28,7 @@ public class TwitterPipe extends Pipe {
             ? new CharSequenceReplace(Pattern.compile("http\\:\\/\\/.*\\b"), "HTTPLINK") 
             : new Noop(),
             anonmymize 
-            ? new CharSequenceReplace(Pattern.compile("\\@[\\p{Ll}\\p{Mn}]+"), "@USERLINK") 
+            ? new CharSequenceReplace(Pattern.compile("\\@[\\p{L}\\p{Mn}]+"), "@USERLINK") 
             : new Noop(),
             new CharSequenceReplace(Pattern.compile("\\'"), ""),
             new CharSequenceReplace(Pattern.compile("\\!\\!+"), "!!"),
@@ -39,8 +39,11 @@ public class TwitterPipe extends Pipe {
             new CharSequenceReplace(Pattern.compile("\\bdont\\s+"), "dont_"),
             new CharSequenceReplace(Pattern.compile("\\baint\\s+"), "aint_"),
             emoticons
-            ? new CharSequence2TokenSequence("([\\@\\#]?[\\p{Ll}\\p{Mn}][\\p{Ll}\\p{Mn}'_]+)|([:;=x][-o^]?[)(/\\\\dp])|([/\\\\)(dp][-o^]?[:;=x])|([!?]+)")
-            : new CharSequence2TokenSequence("[\\@\\#]?[\\p{Ll}\\p{Mn}][\\p{Ll}\\p{Mn}'_]+"),
+            ? new FixEmoticons(Pattern.compile(emoticonPattern, Pattern.CASE_INSENSITIVE))
+            : new Noop(),
+            emoticons
+            ? new CharSequence2TokenSequence(Pattern.compile(corePattern+"|"+emoticonPattern, Pattern.CASE_INSENSITIVE))
+            : new CharSequence2TokenSequence(Pattern.compile(corePattern, Pattern.CASE_INSENSITIVE)),
             new TokenSequenceBiGrammer(),
             new TokenSequenceRemoveStopwords(),
             new TokenSequence2FeatureSequence(),

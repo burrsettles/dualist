@@ -6,13 +6,9 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 
-public class Labelize extends Pipe
-{
+public class Labelize extends Pipe {
     private final static long serialVersionUID = -461155063551297878L; //-8390758647439705273L; 
 
-    // gsc: adding constructor that has an option for the data alphabet as well,
-    // this avoids the data alphabet getting set to null towards the end of a 
-    // SerialPipes object because the data alphabet might have already been set
     public Labelize (Alphabet dataAlphabet, LabelAlphabet labelAlphabet) {
         super(dataAlphabet, labelAlphabet);
     }

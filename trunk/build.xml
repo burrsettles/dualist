@@ -4,10 +4,9 @@
     <property name="src.dir"     value="core/src"/>
     <property name="build.dir"   value="core/build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
-    <!-- <property name="jar.dir" value="${build.dir}/jar"/> -->
-    <property name="jar.dir" value="."/>
     <property name="core.lib.dir"     value="core/lib"/>
     <property name="gui.lib.dir"     value="gui/lib"/>
+    <property name="jar.dir"     value="${gui.lib.dir}"/>
     <property name="main-class"  value="dualist.TUI"/>
 
     <!-- classpath -->
@@ -17,9 +16,11 @@
 
     <!-- targets -->
     <target name="clean">
-        <delete dir="gui/tmp"/>
         <delete dir="${build.dir}"/>
-        <delete file="${core.lib.dir}/${ant.project.name}.jar"/>
+        <exec executable="play">
+            <arg value="clean"/>
+            <arg value="gui"/>
+        </exec>    
     </target>
 
     <target name="compile">
@@ -35,10 +36,6 @@
                 <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
         </jar>
-        <copy file="${jar.dir}/${ant.project.name}.jar" todir="${gui.lib.dir}">
-            <!-- <file file="${jar.dir}/${ant.project.name}.jar"/> -->
-          <!-- <fileset dir="${jar.dir}/${ant.project.name}.jar" excludes="**/*.java"/> -->
-        </copy>
     </target>
 
     <target name="main" depends="jar"/>
