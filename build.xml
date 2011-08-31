@@ -5,6 +5,7 @@
     <property name="build.dir"   value="core/build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
     <!-- <property name="jar.dir" value="${build.dir}/jar"/> -->
+    <property name="jar.dir" value="."/>
     <property name="core.lib.dir"     value="core/lib"/>
     <property name="gui.lib.dir"     value="gui/lib"/>
     <property name="main-class"  value="dualist.TUI"/>
@@ -27,13 +28,16 @@
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="${core.lib.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <zipgroupfileset dir="${core.lib.dir}" includes="*.jar"/>
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
         </jar>
-        <copy todir="${gui.lib.dir}">
-          <fileset dir="${core.lib.dir}" excludes="**/*.java"/>
+        <copy file="${jar.dir}/${ant.project.name}.jar" todir="${gui.lib.dir}">
+            <!-- <file file="${jar.dir}/${ant.project.name}.jar"/> -->
+          <!-- <fileset dir="${jar.dir}/${ant.project.name}.jar" excludes="**/*.java"/> -->
         </copy>
     </target>
 
