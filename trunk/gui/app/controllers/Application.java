@@ -1,58 +1,35 @@
 package controllers;
 
-import play.*;
-import play.cache.Cache;
-import play.data.validation.Required;
-import play.mvc.*;
-
-import util.Util;
-
-import dualist.classify.NaiveBayesWithPriorsTrainer;
-import dualist.classify.Queries;
-import dualist.pipes.CopyData2Source;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.text.DecimalFormat;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.io.Files;
-
-import cc.mallet.classify.Classification;
-import cc.mallet.classify.Classifier;
+import play.Logger;
+import play.cache.Cache;
+import play.data.validation.Required;
+import play.mvc.Controller;
 import cc.mallet.classify.NaiveBayes;
-import cc.mallet.pipe.CharSequence2TokenSequence;
-import cc.mallet.pipe.CharSequenceLowercase;
-import cc.mallet.pipe.CharSequenceRemoveHTML;
-import cc.mallet.pipe.CharSequenceReplace;
-import cc.mallet.pipe.FeatureSequence2AugmentableFeatureVector;
-import cc.mallet.pipe.Input2CharSequence;
 import cc.mallet.pipe.Pipe;
-import cc.mallet.pipe.SerialPipes;
-import cc.mallet.pipe.Target2Label;
-import cc.mallet.pipe.TokenSequence2FeatureSequence;
-import cc.mallet.pipe.TokenSequenceRemoveStopwords;
-import cc.mallet.pipe.iterator.FileIterator;
 import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.Multinomial;
-import cc.mallet.types.RankedFeatureVector;
-import cc.mallet.util.CharSequenceLexer;
 
-import models.*;
+import com.google.common.base.Charsets;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
+
+import dualist.classify.NaiveBayesWithPriorsTrainer;
+import dualist.classify.Queries;
+import dualist.tui.Util;
 
 public class Application extends Controller {
 
@@ -72,7 +49,7 @@ public class Application extends Controller {
         render(username);
     }
 
-    public static void setupExplore(@Required String username, @Required File dataset, @Required String labels, @Required String type, @Required int numInstances) throws IOException {
+    public static void setupExplore(@Required String username, @Required File dataset, @Required String labels, @Required String type, @Required int numInstances) throws Exception {
 
         if(validation.hasErrors()) {
             flash.error(validation.errors().toString());
@@ -85,10 +62,13 @@ public class Application extends Controller {
         String[] myLabels = labels.trim().split("\\s*,\\s*");
         for (String label : myLabels)
             labelAlphabet.lookupIndex(label, true);
+        
+        // set up the data-processing pipeline
+        Pipe myPipe = Util.getPipe(type);
 
         // process the data set...
         Logger.info("Loading '%s' data set...", dataset);
-        InstanceList ilist = Util.readData(dataset, type, labelAlphabet);
+        InstanceList ilist = Util.readZipData(dataset, myPipe, labelAlphabet);
         Alphabet dataAlphabet = ilist.getDataAlphabet();
 
         // set up train/test splits and store them in the cache
@@ -124,7 +104,7 @@ public class Application extends Controller {
         render(username);
     }
 
-    public static void setupExperiment(@Required String username, @Required File trainset, File testset, @Required String type, @Required String mode, @Required int numMinutes, @Required int numInstances) throws IOException {
+    public static void setupExperiment(@Required String username, @Required File trainFile, File testFile, @Required String type, @Required String mode, @Required int numMinutes, @Required int numInstances) throws Exception {
 
         if(validation.hasErrors()) {
             flash.error(validation.errors().toString());
@@ -132,41 +112,53 @@ public class Application extends Controller {
             experiment(username);
         }
 
-        InstanceList trainData;
-        InstanceList testData;
+        InstanceList trainSet;
+        InstanceList testSet;
         Alphabet dataAlphabet;
         LabelAlphabet labelAlphabet;
+        
+        // set up the data-processing pipeline
+        Pipe myPipe = Util.getPipe(type);
 
         // if a test set is supplied, use its annotations 
         // and allow the training corpus to be unlabeled
-        if (testset != null) {
-            Logger.info("Loading '%s' test set...", testset);
-            testData = Util.readData(testset, type, null);
-            dataAlphabet = testData.getDataAlphabet();
-            labelAlphabet = (LabelAlphabet) testData.getTargetAlphabet();
-            Logger.info("Loading '%s' training set...", trainset);
-            trainData = Util.readData(trainset, type, labelAlphabet);
+        if (testFile != null) {
+            Logger.info("Loading '%s' test set...", testFile);
+            testSet = Util.readZipData(testFile, myPipe, null);
+            dataAlphabet = testSet.getDataAlphabet();
+            labelAlphabet = (LabelAlphabet) testSet.getTargetAlphabet();
+            Logger.info("Loading '%s' training set...", trainFile);
+            trainSet = Util.readZipData(trainFile, myPipe, labelAlphabet);
         }
         // otherwise, assume all training data is labeled, 
         // sample 10% as a held-out test set
         else {
-            Logger.info("Loading '%s' data set...", trainset);
-            InstanceList ilist = Util.readData(trainset, type, null);
+            Logger.info("Loading '%s' data set...", trainFile);
+            InstanceList ilist = Util.readZipData(trainFile, myPipe, null);
             dataAlphabet = ilist.getDataAlphabet();
             labelAlphabet = (LabelAlphabet) ilist.getTargetAlphabet();
             Logger.info("Splitting train/set set automatically...");
             InstanceList[] split = ilist.split(new Random(27), new double[]{0.9,0.1});
-            trainData = split[0];
-            testData = split[1];
+            trainSet = split[0];
+            testSet = split[1];
         }
 
+        // sanity check: inspect the label distribution of the test set
+        int[] counts = new int[labelAlphabet.size()];
+        for (Instance instance : testSet) {
+            int li = ((Labeling)instance.getTarget()).getBestIndex();
+            counts[li]++;
+        }
+        for (int li = 0; li < counts.length; li++)
+            Logger.info("Test label '%s': %s instances", labelAlphabet.lookupObject(li), counts[li]);
+
         // set up train/test splits and store them in the cache
-        Cache.set(session.getId()+"-testSet", testData, "90mn");
-        Cache.set(session.getId()+"-unlabeledSet", trainData, "90mn");
-        Cache.set(session.getId()+"-labeledSet", trainData.cloneEmpty(), "90mn");
+        Cache.set(session.getId()+"-testSet", testSet, "90mn");
+        Cache.set(session.getId()+"-unlabeledSet", trainSet, "90mn");
+        Cache.set(session.getId()+"-labeledSet", trainSet.cloneEmpty(), "90mn");
 
         Cache.set(session.getId()+"-username", username, "90mn");
-        Cache.set(session.getId()+"-dataset", trainset.getName(), "90mn");
+        Cache.set(session.getId()+"-dataset", trainFile.getName(), "90mn");
         Cache.set(session.getId()+"-type", type, "90mn");
         Cache.set(session.getId()+"-mode", mode, "90mn");
         Cache.set(session.getId()+"-numMinutes", numMinutes, "90mn");
@@ -177,25 +169,28 @@ public class Application extends Controller {
 
         Logger.info("|featureSet|=%s", dataAlphabet.size());
         Logger.info("|labelSet|=%s", labelAlphabet.size());
-        Logger.info("|trainSet|=%s", trainData.size());
-        Logger.info("|testSet|=%s", testData.size());
+        Logger.info("|trainSet|=%s", trainSet.size());
+        Logger.info("|testSet|=%s", testSet.size());
         Logger.info("User: %s", username);
 
         clearResult();
-        if (testset != null)
+        if (testFile != null)
             logResult("%% separate train/test sets were supplied");
         else
             logResult("%% data set automatically split into train (90%) / test (10%)");
         logResult("%% |featureSet|=" + dataAlphabet.size());
-        logResult("%% |trainSet|=" + trainData.size());
-        logResult("%% |testSet|=" + testData.size());
+        logResult("%% |trainSet|=" + trainSet.size());
+        logResult("%% |testSet|=" + testSet.size());
         for (int li=0; li < labelAlphabet.size(); li++)
             logResult("%% " + li + "=" + labelAlphabet.lookupObject(li));
 
         learn("","","");
     }
 
-    public static void learn(String features, String instances, String log) throws IOException {
+    public static void learn(String features, String instances, String log) throws Exception {
+
+        // evaluation bidness
+        logResult(log);
 
         // retrieve resources from cache
         long startTime = (Long) Cache.get(session.getId()+"-startTime");
@@ -209,9 +204,9 @@ public class Application extends Controller {
         InstanceList unlabeledSet = (InstanceList) Cache.get(session.getId()+"-unlabeledSet");
         boolean explore = (Boolean) Cache.get(session.getId()+"-explore");
 
-        long timeSoFar = (System.currentTimeMillis()/1000) - startTime;
-
         HashMultimap<Integer,String> labeledFeatures = HashMultimap.create();
+
+        long timeSoFar = (System.currentTimeMillis()/1000) - startTime;
 
         // process newly-labeled features for this round
         LabelAlphabet labelAlphabet = (LabelAlphabet) labeledSet.getTargetAlphabet();
@@ -243,7 +238,7 @@ public class Application extends Controller {
                             instance.unLock();
                             instance.setTarget(labelAlphabet.lookupLabel(li));
                             instance.lock();
-                            labeledSet.add(instance, 5.0);
+                            labeledSet.add(instance);
                         }
                     }
                 }
@@ -273,33 +268,39 @@ public class Application extends Controller {
             nbModel = nbTrainer.train (trainSet2);
         }
         // otherwise, just train using the labeled data
-        else {
+        else
             nbModel = nbTrainer.train( labeledSet );
-        }
 
-        // evaluation bidness
-        logResult(log);
-        if (!explore) {
-            double accuracy = nbModel.getAccuracy(testSet);
-            logResult(timeSoFar + "\taccuracy\t" + accuracy);
-            double[] f1s = new double[labelAlphabet.size()];
-            for (int li = 0; li < labelAlphabet.size(); li++) {
-                f1s[li] = nbModel.getF1(testSet, li);
-                logResult(timeSoFar + "\tF1:" + li + "\t" + f1s[li]);
-            }
-            double macroF1 = Util.average(f1s);
-            logResult(timeSoFar + "\tmacroF1\t" + macroF1);
-        }
+        // save the learned classifier (timestamped)
+        String modelFile = MODELS_DIR + getTrialID() + "." + String.format("%04d", (int)timeSoFar) + ".model";
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
+        oos.writeObject(nbModel);
+        oos.close();
+        
+        // TODO: save the labeled instances and features, as well! 
 
-        //		double logLikelihood = nbModel.dataLogLikelihood(trainSet2);
+        // TODO: for some reason this eval is broken for the time being...
+        // just do evals using saved models (code above)
+        //        if (!explore) {
+        //            double accuracy = nbModel.getAccuracy(testSet);
+        //            logResult(timeSoFar + "\taccuracy\t" + accuracy);
+        //            double[] f1s = new double[labelAlphabet.size()];
+        //            for (int li = 0; li < labelAlphabet.size(); li++) {
+        //                f1s[li] = nbModel.getF1(testSet, li);
+        //                logResult(timeSoFar + "\tF1:" + li + "\t" + f1s[li]);
+        //            }
+        //            double macroF1 = Util.average(f1s);
+        //            logResult(timeSoFar + "\tmacroF1\t" + macroF1);
+        //        }
 
-        // FIRST!!! -- determine if too much time has passed (5min), if so then die.
+
+        // FIRST!!! -- determine if too much time has passed, if so then die.
         if (timeSoFar > numMinutes * 60) {
             flash.error("Time is up! Please select another experiment to run.");
             experiment(username);
         }
 
-        // query objects
+        // query container objects
         Multimap<Integer,String> queryFeatures = null;
         InstanceList queryInstances = null;
 
@@ -308,7 +309,7 @@ public class Application extends Controller {
         for (Instance inst : labeledSet)
             instLabels.add(inst.getTarget().toString());
         boolean instancesCovered = ( labelAlphabet.size() == instLabels.size() ) 
-        && (labeledSet.size() > 2 * labelAlphabet.size() );
+        && ( labeledSet.size() > 1.5 * labelAlphabet.size() );
         boolean featuresCovered = ( labelAlphabet.size() == labeledFeatures.keySet().size() );
 
         // if we're in passive mode, or have insufficient labels, do passive selection
@@ -330,16 +331,9 @@ public class Application extends Controller {
         }
 
         // update cache
-        Cache.set(session.getId()+"-testSet", testSet, "30mn");
-        Cache.set(session.getId()+"-unlabeledSet", unlabeledSet, "30mn");
-        Cache.set(session.getId()+"-labeledSet", labeledSet, "30mn");
-
-        // save the learned classifier
-        ObjectOutputStream oos = 
-            new ObjectOutputStream(
-                    new FileOutputStream(MODELS_DIR + getTrialID() + ".model"));
-        oos.writeObject(nbModel);
-        oos.close();
+        Cache.set(session.getId()+"-testSet", testSet, "90mn");
+        Cache.set(session.getId()+"-unlabeledSet", unlabeledSet, "90mn");
+        Cache.set(session.getId()+"-labeledSet", labeledSet, "90mn");
 
         // done! render!
         render(mode, username, dataset, timeSoFar, labelAlphabet, queryInstances, queryFeatures, labeledFeatures);
@@ -370,7 +364,7 @@ public class Application extends Controller {
             trialID = trialID + "_explore";
         return trialID;
     }
-
+    
     public static void predict(String features, String instances) {
 
         // retrieve resources from cache
@@ -393,8 +387,8 @@ public class Application extends Controller {
 
         // set up trainer object for this iteration
         NaiveBayesWithPriorsTrainer nbTrainer = new NaiveBayesWithPriorsTrainer(labeledSet.getPipe()); 
-        nbTrainer.setPriorMultinomialEstimator(new Multinomial.MEstimator(5));
-        nbTrainer.setAlpha(50);
+        nbTrainer.setPriorMultinomialEstimator(new Multinomial.MEstimator(4));
+        nbTrainer.setAlpha(100);
         for (int li : labeledFeatures.keySet()) {
             String label = labelAlphabet.lookupObject(li).toString();
             for (String feature : labeledFeatures.get(li)) {
