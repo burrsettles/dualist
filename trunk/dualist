@@ -30,18 +30,29 @@ if cmd == 'gui':
 elif cmd == 'classify':
     if len(sys.argv) < 4:
         print >> sys.stderr, "~ At least two arguments are required:"
-        print >> sys.stderr, "~     dualist classify [model] [documents...]"
+        print >> sys.stderr, "~     $ dualist classify [model] [documents...]"
         print >> sys.stderr, "~"
     else:
-        os.system('java -Xmx' + heapsize + ' -jar gui/lib/dualist-core.jar ' + ' '.join(more_args))
+        os.system('java -Xmx' + heapsize + ' -cp gui/lib/dualist-core.jar dualist.tui.Classify ' + ' '.join(more_args))
+        sys.exit(0)
+
+# evaluate a trained classifier on a test set
+elif cmd == 'test':
+    if len(sys.argv) < 4:
+        print >> sys.stderr, "~ Two arguments are required:"
+        print >> sys.stderr, "~     $ dualist test [model] [test-set]"
+        print >> sys.stderr, "~"
+    else:
+        os.system('java -Xmx' + heapsize + ' -cp gui/lib/dualist-core.jar dualist.tui.Test ' + ' '.join(more_args))
         sys.exit(0)
 
 # help!
 else:
     print >> sys.stderr, "~ Usage: dualist cmd [args]"
     print >> sys.stderr, "~"
-    print >> sys.stderr, "~    gui         run the web-based annotation interface"
-    print >> sys.stderr, "~    classify    classify text documents according to a trained model"
+    print >> sys.stderr, "~    gui          run the web-based annotation interface"
+    print >> sys.stderr, "~    classify     classify text documents according to a trained model"
+    print >> sys.stderr, "~    test         evaluate a trained model on a labeled test set"
     print >> sys.stderr, "~"
     if len(sys.argv) > 1:
         print >> sys.stderr, "~ Invalid command: %s" % sys.argv[1]

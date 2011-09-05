@@ -7,6 +7,7 @@ http://www.apache.org/licenses/LICENSE-2.0
 See README.txt for other release information.
 
 DUALIST also depends on several other open-source projects:
+ - Apache Commons IO (http://commons.apache.org/io/) -- Apache License 2.0
  - Guava (http://code.google.com/p/guava-libraries) -- Apache License 2.0
  - jQuery (http://jquery.com/) -- MIT License
  - MALLET (http://mallet.cs.umass.edu/) -- Common Public License 1.0

@@ -5,8 +5,8 @@ Burr Settles
 Carnegie Mellon University
 bsettles@cs.cmu.edu
 
-Version 0.1
-May 25, 2011
+Version 0.2
+September 5, 2011
 
 DUALIST is an interactive machine learning system for building classifiers
 quickly. It does so by asking "questions" of the user in the form of both data
@@ -24,10 +24,10 @@ See LICENSE.txt for licensing information.
 
 Citation information and technical details:
 
-	B. Settles. Closing the Loop: Fast, Interactive Semi-Supervised Annotation 
-	With Queries on Features and Instances. In Proceedings of the Conference 
-	on Empirical Methods in Natural Language Processing (EMNLP), to appear. 
-	ACL Press, 2011.
+    B. Settles. Closing the Loop: Fast, Interactive Semi-Supervised Annotation 
+    With Queries on Features and Instances. In Proceedings of the Conference 
+    on Empirical Methods in Natural Language Processing (EMNLP), to appear. 
+    ACL Press, 2011.
 
 
 
@@ -52,51 +52,77 @@ is related: https://sites.google.com/site/comblearn/
 
 
 
-INTALLATION + USAGE
--------------------
+INTALLATION + RUNNING THE GUI
+-----------------------------
 
 DUALIST requires Java 1.6 and Python 2.5 to work properly. It ships with most 
-of the libraries it needs to work, the only exception being the Play! web 
-framework for Java v1.1, which can be downloaded here:
+of the dependencies it needs to work, the only exception being the Play! web 
+framework for Java v1.1+, which can be downloaded here:
 
-	http://download.playframework.org/releases/play-1.1.zip
+    http://download.playframework.org/releases/play-1.1.zip
 
 Download and install Play! wherever you want on your system (follow the 
 instructions on their website), and make sure that the "play" command is in 
 your $PATH. Once that is done, all you need to do to run DUALIST is:
 
-	% cd <path-to>/dualist
-	% play run
+    $ cd <path-to>/dualist
+    $ dualist gui
 
 This will launch a web server on your machine, which you can access by 
 pointing your favorite browser to:
 
-	http://localhost:9000/
+    http://localhost:8080/
 
 And follow the instructions on the screen. DUALIST has only been tested on Mac
 OS 10.6 and Ubuntu Linux, but it should be platform-independent and work in
 any unix-like environment (and even Windows). Make sure you don't have any
-other processes listening on the 9000 port of your machine.
+other processes listening on the 8080 port of your machine.
 
 NOTE: DUALIST is written to run on a single computer and loads all data into
 memory. It is robust for hundreds of thousands of instances and features on
-modern hardware, but may be difficult to use beyond that. If your data causes
-DUALIST to run out of memory, try starting it up with an increased Java heap
-size, e.g.:
-
-	% play run -Xmx2000m
+modern hardware, but may be difficult to use beyond that.
 
 
 
 LOGS AND OUTPUT
 ---------------
 
-DUALIST writes a log of user actions in the "public/results/" directory. Web
+DUALIST writes a log of user actions in the "results/" directory. Trained 
+models are archived as learning progresses in the "models/" directory. Web
 server system output is written to "application.log" in the root directory.
 
 In "Explore" mode, you can click the "predict" button at the bottom of the
 page at any time to get the current model's label predictions, followed by the
 set of labeled instances and features/terms (prepended by the '#' character).
+
+
+
+USING TRAINED MODELS
+--------------------
+
+Trained models are stored in the "models/" directory. There are two utilities
+for using these models to apply or evaluate these models on data:
+
+    $ dualist classify [model] [documents...]
+
+This takes a model file and any number of either raw-text or ZIP archive files
+in the appropriate data format (see data file formats section below). DUALIST
+will then output predictions to STDOUT in a tab-delimted format:
+
+    textID  label1  prob1   label2  prob2   ... text-summary
+
+The label predictions are output in rank order, thus column #2 corresponds to
+the model's most likely prediction, and column #3 is its posterior 
+probability, and so on. The text summary in the final columns is a snippet of 
+the first 150 characters in the instance.
+
+The other utility, for evaluation, is:
+
+    $ dualist test [model] [test-set]
+
+This will produce various statistics about the model and data set, as well as 
+the model's accuracy compared to a 10-fold cross-validation baseline using the 
+same test set.
 
 
 
@@ -112,12 +138,12 @@ In "experiment" mode, instances must have labels which are defined by
 subdirectories within the archive. For example, for a classification task with
 two labels "foo" and "bar," the ZIP archive structure would look like this:
 
-	foo/foo-file1.txt
-	foo/foo-file2.txt
-	...
-	bar/bar-file1.txt
-	bar/bar-file2.txt
-	...
+    foo/foo-file1.txt
+    foo/foo-file2.txt
+    ...
+    bar/bar-file1.txt
+    bar/bar-file2.txt
+    ...
 
 DUALIST comes with four built-in data processing setups:
 
@@ -145,16 +171,28 @@ CUSTOMIZATION
 
 To create your own data processing pipelines, follow these steps:
 
-	1. Familiarize yourself with the "cc.mallet.pipe" package API
-	(http://mallet.cs.umass.edu/api/)
-	
-	2. Implement a new pipe in the "app.guts.pipes" package of the DUALIST
-	codebase (use "DocumentPipe.java" as an example).
-	
-	3. Edit the following files to incorporate the new pipeline into the 
-	web-based user interface:
-		app/guts/Util.java (the "readData" method)
-		app/views/Applications/experiment.html
-		app/views/Applications/explore.html
+    1. Familiarize yourself with the "cc.mallet.pipe" package API
+    (http://mallet.cs.umass.edu/api/)
+    
+    2. Implement a new pipe in the "dualist.pipes" package of the DUALIST
+    codebase (use "DocumentPipe.java" as an example).
+    
+    3. Edit the following files to incorporate the new pipeline into the 
+    web-based user interface:
+        core/src/dualist/tui/Util.java (the "getPipe" method)
+        gui/app/views/Applications/experiment.html
+        gui/app/views/Applications/explore.html
+    
+    4. Changes made to the "core/" section of the codebase must be manually 
+    compiled by typing the "ant" command. You may need to stop and restart the 
+    GUI in this case.
+
+    5. Changes made to the "gui/" section of the codebase are re-compiled on 
+    the fly by the Play! web framework.
+    
+    6. For more advanced deployment of the web-based GUI, you will probably 
+    need to edit the file "gui/app/conf/application.conf". Refer the the Play! 
+    documentation for more details: 
+    http://www.playframework.org/documentation/1.1/production
 
 Good luck, and have fun!
