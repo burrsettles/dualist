@@ -81,7 +81,7 @@ public class Application extends Controller {
         Cache.set(session.getId()+"-type", type, "90mn");
         Cache.set(session.getId()+"-mode", "dual", "90mn");
         Cache.set(session.getId()+"-numMinutes", 360, "90mn");
-        Cache.set(session.getId()+"-numInstances", numInstances, "90mn");
+        Cache.set(session.getId()+"-numInstances", Math.min(numInstances, ilist.size()), "90mn");
         Cache.set(session.getId()+"-startTime", (System.currentTimeMillis()/1000), "90mn" );
 
         Cache.set(session.getId()+"-explore", true, "90mn");
@@ -162,7 +162,7 @@ public class Application extends Controller {
         Cache.set(session.getId()+"-type", type, "90mn");
         Cache.set(session.getId()+"-mode", mode, "90mn");
         Cache.set(session.getId()+"-numMinutes", numMinutes, "90mn");
-        Cache.set(session.getId()+"-numInstances", numInstances, "90mn");
+        Cache.set(session.getId()+"-numInstances", Math.min(numInstances, trainSet.size()), "90mn");
         Cache.set(session.getId()+"-startTime", (System.currentTimeMillis()/1000), "90mn" );
 
         Cache.set(session.getId()+"-explore", false, "90mn");
@@ -207,7 +207,7 @@ public class Application extends Controller {
         HashMultimap<Integer,String> labeledFeatures = HashMultimap.create();
 
         long timeSoFar = (System.currentTimeMillis()/1000) - startTime;
-
+        
         // process newly-labeled features for this round
         LabelAlphabet labelAlphabet = (LabelAlphabet) labeledSet.getTargetAlphabet();
         for (String labeledFeature : features.trim().split("\\s+")) {
@@ -312,13 +312,16 @@ public class Application extends Controller {
         && ( labeledSet.size() > 1.5 * labelAlphabet.size() );
         boolean featuresCovered = ( labelAlphabet.size() == labeledFeatures.keySet().size() );
 
+        Alphabet dataAlphabet = (Alphabet) labeledSet.getDataAlphabet();
+        int NUM_FEATURE_QUERIES = Math.min(100, dataAlphabet.size());
+
         // if we're in passive mode, or have insufficient labels, do passive selection
         if (mode.equals("passive") || ( !featuresCovered && !instancesCovered ) ) {
             Logger.info("PASSIVE QUERYING");
             logResult(timeSoFar+"\tPASSIVE");
             queryInstances = Queries.randomInstances(unlabeledSet, numInstances );
             //			queryFeatures = Queries.randomFeaturesPerLabel(labeledFeatures, unlabeledSet, 50);
-            queryFeatures = Queries.commonFeaturesPerLabel(labeledFeatures, unlabeledSet, 100);
+            queryFeatures = Queries.commonFeaturesPerLabel(labeledFeatures, unlabeledSet, NUM_FEATURE_QUERIES);
         }
         // otherwise, query actively
         else {
@@ -327,7 +330,7 @@ public class Application extends Controller {
             queryInstances = Queries.queryInstances(nbModel, unlabeledSet, numInstances, "entropy" );
             // do the per-label query thang
             queryFeatures = Queries.queryFeaturesPerLabelMI(nbModel, labeledFeatures, 
-                    Util.probabilisticData(nbModel, labeledSet, unlabeledSet), 100);
+                    Util.probabilisticData(nbModel, labeledSet, unlabeledSet), NUM_FEATURE_QUERIES);
         }
 
         // update cache
@@ -387,8 +390,8 @@ public class Application extends Controller {
 
         // set up trainer object for this iteration
         NaiveBayesWithPriorsTrainer nbTrainer = new NaiveBayesWithPriorsTrainer(labeledSet.getPipe()); 
-        nbTrainer.setPriorMultinomialEstimator(new Multinomial.MEstimator(4));
-        nbTrainer.setAlpha(100);
+        nbTrainer.setPriorMultinomialEstimator(new Multinomial.MEstimator(2));
+        nbTrainer.setAlpha(50);
         for (int li : labeledFeatures.keySet()) {
             String label = labelAlphabet.lookupObject(li).toString();
             for (String feature : labeledFeatures.get(li)) {

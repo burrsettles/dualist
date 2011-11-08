@@ -11,6 +11,7 @@ import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.TokenSequence2FeatureSequence;
 import cc.mallet.pipe.TokenSequenceRemoveStopwords;
+import cc.mallet.pipe.PrintInputAndTarget;
 import cc.mallet.types.Instance;
 
 public class TwitterPipe extends Pipe {
@@ -25,7 +26,7 @@ public class TwitterPipe extends Pipe {
             new CopyData2Source(),
             new CharSequenceLowercase(),
             anonmymize 
-            ? new CharSequenceReplace(Pattern.compile("http\\:\\/\\/.*\\b"), "HTTPLINK") 
+            ? new CharSequenceReplace(Pattern.compile("http\\:\\/\\/[^\\s]*\\b"), "HTTPLINK") 
             : new Noop(),
             anonmymize 
             ? new CharSequenceReplace(Pattern.compile("\\@[\\p{L}\\p{Mn}]+"), "@USERLINK") 
@@ -49,7 +50,7 @@ public class TwitterPipe extends Pipe {
             new TokenSequence2FeatureSequence(),
             new FeatureSequence2AugmentableFeatureVector(),
             new Labelize(),
-//            new PrintInputAndTarget(),
+           new PrintInputAndTarget(),
     });
 
     public Instance pipe (Instance carrier) {
