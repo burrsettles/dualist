@@ -50,7 +50,7 @@ public class TwitterPipe extends Pipe {
             new TokenSequence2FeatureSequence(),
             new FeatureSequence2AugmentableFeatureVector(),
             new Labelize(),
-           new PrintInputAndTarget(),
+//           new PrintInputAndTarget(),
     });
 
     public Instance pipe (Instance carrier) {
