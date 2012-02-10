@@ -6,7 +6,7 @@ Carnegie Mellon University
 bsettles@cs.cmu.edu
 
 Version 0.2
-September 5, 2011
+February 10, 2012
 
 DUALIST is an interactive machine learning system for building classifiers
 quickly. It does so by asking "questions" of the user in the form of both data
@@ -21,6 +21,7 @@ and those arising by statute or otherwise in law or from a course of dealing
 or usage of trade. *Whew!*
 
 See LICENSE.txt for licensing information.
+See CHANGELOG.txt for a history of updates.
 
 Citation information and technical details:
 
