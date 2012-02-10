@@ -45,7 +45,7 @@ public class Test {
             InstanceList trainData = split[0];
             InstanceList evalData = split[1];
 
-            NaiveBayesTrainer nbTrainer = new NaiveBayesTrainer(myPipe);
+            NaiveBayesTrainer nbTrainer = new NaiveBayesTrainer();
             NaiveBayes cvModel = nbTrainer.train(trainData);
 
             accuracies.add(cvModel.getAccuracy(evalData));
