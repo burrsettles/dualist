@@ -30,6 +30,7 @@ public class Test {
 
         // read in the data set
         Pipe myPipe = nbModel.getInstancePipe();
+        Util.initializeTestLabels(myPipe, nbModel.getLabelAlphabet());  // make sure the internal target labels are setup appropriately
         InstanceList ilist = Util.readZipData(args[1], myPipe, null); 
 
         // writes out some data stats
