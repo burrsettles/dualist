@@ -1,6 +1,14 @@
 DUALIST: Utility for Active Learning with Instances and Semantic Terms
 ======================================================================
 
+Version 02 - 03/08/2012
+-----------------------
+
+* BUG FIX: Updates to dualist.tui.Util and dualist.tui.Test that fix a bug in
+  testing post-hoc trained models, in the event that the training and test
+  labels are presented in a different order. (Submitted by Stef Sch)
+
+
 Version 02 - 02/10/2012
 -----------------------
 

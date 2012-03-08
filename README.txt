@@ -5,8 +5,8 @@ Burr Settles
 Carnegie Mellon University
 bsettles@cs.cmu.edu
 
-Version 0.2
-February 10, 2012
+Version 0.3
+March 08, 2012
 
 DUALIST is an interactive machine learning system for building classifiers
 quickly. It does so by asking "questions" of the user in the form of both data

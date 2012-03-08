@@ -204,5 +204,14 @@ public class Util {
         }
     }
 
-
+    /* Initializes the target labels from the given alphabet, to ensure consistency / order when running the test data */
+    public static void initializeTestLabels(Pipe myPipe, LabelAlphabet labelAlphabet) {
+        InstanceList ilist = new InstanceList (myPipe);
+        
+        java.util.Iterator it = labelAlphabet.iterator();
+        while(it.hasNext()) {
+            Object label = it.next();
+            ilist.addThruPipe(new Instance("Fake example for " + label, label, "Fake example name for " + label, null));
+        }
+    }
 }
