@@ -172,7 +172,7 @@ public class Queries {
     }
     
     public static double margin(LabelVector lv) {
-        return Math.abs(lv.getValueAtRank(0) - lv.getValueAtRank(1));
+        return Math.abs(lv.getValueAtRank(1) - lv.getValueAtRank(0));
     }
 
     public static double leastConfident(LabelVector lv) {
